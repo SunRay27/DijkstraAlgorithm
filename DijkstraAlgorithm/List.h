@@ -252,7 +252,7 @@ public:
 
 		return false;
 	}
-	int IndexOf( T& value) 
+	long IndexOf( T& value)
 	{
 		for (size_t i = 0; i < count; i++)
 			if (value == At(i))

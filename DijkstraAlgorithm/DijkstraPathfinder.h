@@ -145,7 +145,7 @@ public:
 	{
         ParseNodes(txtFileName);
 	}
-    void FindPath(size_t fromIndex, size_t toIndex)
+    long FindPath(size_t fromIndex, size_t toIndex)
     {
         if (fromIndex < 0 || fromIndex > nodes.Count() - 1 || toIndex < 0 || toIndex > nodes.Count() - 1)// || fromIndex == toIndex)
             throw invalid_argument("invalid index");
@@ -192,10 +192,14 @@ public:
         {
             cout << "Calculated path distance from " << nodes[fromIndex].name << " to " << nodes[toIndex].name << " is " << nodes[toIndex].distance << endl;
             PrintPathForNode(toIndex);
+            return nodes[toIndex].distance;
         }
         else
-            cout << "Path from " << nodes[fromIndex].name << " to " << nodes[toIndex].name << " doen't exist " << endl<<endl;
-
+        {
+            cout << "Path from " << nodes[fromIndex].name << " to " << nodes[toIndex].name << " doen't exist " << endl << endl;
+            return -1;
+        }
+        
         
     }
 };
