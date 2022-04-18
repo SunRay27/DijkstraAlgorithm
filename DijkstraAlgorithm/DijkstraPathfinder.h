@@ -20,7 +20,6 @@ private:
 
         if (targetIndex != -1)
         {
-
             if (neighborIndex == -1)
             {
                 nodes.Add(neighbor);
@@ -39,8 +38,9 @@ private:
                 neighborIndex = nodes.Count() - 1;
             }
         }
-
-        nodes[targetIndex].AddNeighbor(&nodes[neighborIndex], cost);
+        if(!nodes[targetIndex].ContainsNeighbor(&nodes[neighborIndex]))
+            nodes[targetIndex].AddNeighbor(&nodes[neighborIndex], cost);
+        //else just skip those nodes
     }
     void PrintPathForNode(size_t toIndex)
     {
@@ -65,20 +65,7 @@ private:
             cout << endl;
 
     }
-    int ParseTravelCost(String stringToParse)
-    {
-        //stringToParse.Trim();
-        int result = -1;
-        if (sscanf_s(stringToParse.GetArrayPointer(), "%i", &result) != 1)
-        {
-            if (stringToParse != "N/A")
-            {
-                //cerr << "Error: expected token integer type or <N/A>, got something else - " << stringToParse << endl;
-                throw exception("expected token integer type or <N/A>, got something else");
-            }
-        }
-        return result;
-    }
+   
     void ParseNodes(const String& txtFileName)
     {
         List<String> lines;
@@ -100,6 +87,11 @@ private:
         inputStream.close();
         //now we have all file lines...
 
+        ParseNodesFromList(lines);
+    }
+    void ParseNodesFromList(List<String>& lines)
+    {
+        //now we have all file lines...
         //split lines and fill allNodes
         for (size_t i = 0; i < lines.Count(); i++)
         {
@@ -134,8 +126,24 @@ private:
                 cout << "   --->" << nodes[i].GetNeighour(j)->name << " " << nodes[i].GetTravelCost(j) << endl;
         }
     }
-
 public:
+    static long ParseTravelCost(String& stringToParse)
+    {
+        //stringToParse.Trim();
+        long result = -1;
+        if (sscanf_s(stringToParse.GetArrayPointer(), "%i", &result) != 1)
+        {
+            if (stringToParse != "N/A")
+            {
+                //cerr << "Error: expected token integer type or <N/A>, got something else - " << stringToParse << endl;
+                throw exception("expected token non-negative integer type or <N/A>, got something else");
+            }
+            return -1;
+        }
+        if(result < 0)
+            throw exception("expected token non-negative integer type or <N/A>, got negative integer");
+        return result;
+    }
 
     size_t GetNodeCount()
     {
@@ -145,36 +153,48 @@ public:
 	{
         ParseNodes(txtFileName);
 	}
+    DijkstraPathfinder(List<String>& lines)
+    {
+        ParseNodesFromList(lines);
+    }
     long FindPath(size_t fromIndex, size_t toIndex)
     {
-        if (fromIndex < 0 || fromIndex > nodes.Count() - 1 || toIndex < 0 || toIndex > nodes.Count() - 1)// || fromIndex == toIndex)
+        if (fromIndex < 0 || fromIndex > nodes.Count() - 1 || toIndex < 0 || toIndex > nodes.Count() - 1)
             throw invalid_argument("invalid index");
 
         //init distances
         for (size_t i = 0; i < nodes.Count(); i++)
             nodes[i].distance = SIZE_MAX;
+        
 
         //init start node
         nodes[fromIndex].distance = 0;
         nodes[fromIndex].pathFrom = nullptr;
-
-        Queue<DijkstraNode*> searchFronier;
-        searchFronier.Enqueue(&nodes[fromIndex]);
+        
+        //some kind of priority queue
+        //but in list
+        List<DijkstraNode*> searchFronier;
+        searchFronier.Add(&nodes[fromIndex]);
 
         while (searchFronier.Count() > 0)
         {
-            DijkstraNode* current = searchFronier.Dequeue();
-            
+            DijkstraNode* current = searchFronier[0];
+            searchFronier.RemoveAt(0);
+
+            long minCost = SIZE_MAX;
             for (size_t i = 0; i < current->GetNeighboursCount(); i++)
             {
                 DijkstraNode* neighbor = current->GetNeighour(i);
+
+                
                 size_t newDistance = current->distance + current->GetTravelCost(i);
 
+                //update distances
                 if (neighbor->distance == SIZE_MAX)
                 {
                     neighbor->distance = newDistance;
                     neighbor->pathFrom = current;
-                    searchFronier.Enqueue(neighbor);
+                    searchFronier.Add(neighbor);
                 }
                 else if (newDistance < neighbor->distance)
                 {
@@ -183,9 +203,8 @@ public:
                 }
             }
 
-            //sort frontier by distances?
-            //no, its A* prerogative
-            //why not A*?
+            //sort pointers by value's distance
+            searchFronier.SortPtr(true);
         }
 
         if (nodes[toIndex].distance != SIZE_MAX)

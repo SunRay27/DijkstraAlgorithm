@@ -5,7 +5,7 @@ class DijkstraNode
 {
 private:
     List<DijkstraNode*> neighbours;
-    List<int> costs;
+    List<long> costs;
 public:
     DijkstraNode* pathFrom;
     size_t distance;
@@ -29,8 +29,15 @@ public:
     {
         return !(*this == toCompare);
     }
-    
-    int GetTravelCost(size_t neighborIndex)
+    friend bool operator<(DijkstraNode& l, DijkstraNode& r)
+    { 
+        return l.distance < r.distance; 
+    }
+    friend bool operator>(DijkstraNode& l, DijkstraNode& r)
+    {
+        return l.distance > r.distance;
+    }
+    long GetTravelCost(size_t neighborIndex)
     {
         return costs[neighborIndex];
     }
@@ -47,5 +54,9 @@ public:
     size_t GetNeighboursCount()
     {
         return neighbours.Count();
+    }
+    bool ContainsNeighbor(DijkstraNode* neighbor)
+    {
+        return neighbours.Contains(neighbor);
     }
 };

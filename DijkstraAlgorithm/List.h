@@ -79,12 +79,19 @@ private:
 			do
 			{
 				while (At(left) < middle) left++;
-				while (At(right) > middle) right--;
+				while (At(right) > middle)
+					//I don't use signed indexes
+					// so I have nothing but to suffer
+					if ((int)right - 1 > -1)
+						right--;
 				if (left <= right)
 				{
 					Swap(left, right);
 					left++;
-					right--;
+					//I don't use signed indexes
+					// so I have nothing but to suffer
+					if ((int)right - 1 > -1)
+						right--;
 				}
 			} while (left <= right);
 
@@ -102,12 +109,19 @@ private:
 			do
 			{
 				while (At(left) > middle) left++;
-				while (At(right) < middle) right--;
+				while (At(right) < middle) 					
+					//I don't use signed indexes
+					// so I have nothing but suffer
+					if ((int)right - 1 > -1)
+						right--;
 				if (left <= right)
 				{
 					Swap(left, right);
 					left++;
-					right--;
+					//I don't use signed indexes
+					// so I have nothing but suffer
+					if ((int)right - 1 > -1)
+						right--;
 				}
 			} while (left < right);
 
@@ -117,10 +131,83 @@ private:
 		}
 	}
 
+	void QuickSortPtrAscending(size_t first, size_t last)
+	{
+		if (first < last)
+		{
+			size_t left = first, right = last;
+			T& middle = At((left + right) / 2);
+			do
+			{
+				while (*At(left) < *middle) 
+					left++;
+				while (*At(right) > *middle) 
+					//I don't use signed indexes
+					// so I have nothing but suffer
+					if ((int)right - 1 > -1)
+						right--;
+
+				if (left <= right)
+				{
+					Swap(left, right);
+					left++;
+					//I don't use signed indexes
+					// so I have nothing but suffer
+					if ((int)right - 1 > -1)
+						right--;
+				}
+			} while (left <= right);
+
+
+			QuickSortPtrAscending(first, right);
+			QuickSortPtrAscending(left, last);
+		}
+	}
+	void QuickSortPtrDescending(size_t first, size_t last)
+	{
+		if (first < last)
+		{
+			size_t left = first, right = last;
+			T& middle = At((left + right) / 2);
+			do
+			{
+				while (*At(left) > *middle) 
+					left++;
+
+				while (*At(right) < *middle)
+
+					//I don't use signed indexes
+					// so I have nothing but suffer
+					if((int)right - 1 > -1)
+						right--;
+				
+				if (left <= right)
+				{
+					Swap(left, right);
+					left++;
+
+					//I don't use signed indexes
+					// so I have nothing but suffer
+					if ((int)right - 1 > -1)
+						right--;
+				}
+			} while (left < right);
+
+			
+
+			QuickSortPtrDescending(first, right);
+			QuickSortPtrDescending(left, last);
+		}
+	}
+
 public:
 	~List() { Clear(); }
 	List() : count(0), curElement(0), head(nullptr), tail(nullptr), current(nullptr), previous(nullptr) {}
 
+	List(const std::initializer_list<T>& list) : List()
+	{
+		AddRange(list);
+	}
 	
 
 	void RemoveAll(const T& value)
@@ -184,6 +271,16 @@ public:
 			QuickSortDescending(0, count - 1);
 	}
 
+	void SortPtr(bool ascending)
+	{
+		if (count == 0)
+			return;
+
+		if (ascending)
+			QuickSortPtrAscending(0, count - 1);
+		else
+			QuickSortPtrDescending(0, count - 1);
+	}
 
 	void Swap(size_t i, size_t j)
 	{
@@ -262,7 +359,7 @@ public:
 	}
 
 
-	void AddRange(std::initializer_list<T> list)
+	void AddRange(const std::initializer_list<T>& list)
 	{
 		for (auto elem : list)
 			Add(elem);
@@ -389,5 +486,4 @@ public:
 		tail = currentCopy;
 		current = head;
 	}
-
 };
